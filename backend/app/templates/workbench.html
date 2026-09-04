@@ -56,10 +56,11 @@
   <p class="err">{{ error }}</p>
   {% endif %}
 
+  <p class="stage-cue">{{ lesson.one_liner }}</p>
+
   <div class="bench">
-  <div class="bench-main">
-  {% if pack %}
   <div class="tabs" role="tablist">
+    {% if pack %}
     <button type="button" class="tab on" data-tab="decision">Decision</button>
     <button type="button" class="tab" data-tab="briefing">Briefing</button>
     <button type="button" class="tab" data-tab="citations">Citations</button>
@@ -67,7 +68,11 @@
     {% if pack.open_questions or pack.assumptions or pack.risks %}
     <button type="button" class="tab" data-tab="risks">Risks</button>
     {% endif %}
+    {% endif %}
+    <button type="button" class="tab{% if not pack %} on{% endif %}" data-tab="lesson">Lesson</button>
   </div>
+
+  {% if pack %}
 
   <div id="tab-decision" class="panel on">
     <h2>Decision</h2>
@@ -336,6 +341,42 @@
     {% endif %}
   </div>
   {% endif %}
+  {% endif %}
+
+  <div id="tab-lesson" class="panel{% if not pack %} on{% endif %}">
+    <p class="kicker">This stage</p>
+    <h2 class="lesson-name">{{ lesson.stage_name }}</h2>
+    <p class="lesson-about">{{ lesson.about }}</p>
+    <p class="row"><strong>The job.</strong> {{ lesson.pm_job }}</p>
+
+    <h2>Walk out with</h2>
+    <ul>
+      {% for item in lesson.must_produce %}
+      <li>{{ item }}</li>
+      {% endfor %}
+    </ul>
+
+    <h2>Ask around the table</h2>
+    <ul>
+      {% for q in lesson.questions_to_ask %}
+      <li>{{ q }}</li>
+      {% endfor %}
+    </ul>
+
+    <h2>Watch for</h2>
+    <ul>
+      {% for f in lesson.common_failure %}
+      <li>{{ f }}</li>
+      {% endfor %}
+    </ul>
+
+    <p class="hint">Usual lenses: {{ lesson.frameworks | join(" · ") }}</p>
+    <p class="row"><strong>Sign.</strong> {{ lesson.how_this_gate_works }}</p>
+    <p class="hint">{{ lesson.next_stage_teaser }}</p>
+    {% if not pack %}
+    <p class="hint">No pack yet. Run this room when ready.</p>
+    {% endif %}
+  </div>
 
   <script>
     document.querySelectorAll(".tab").forEach(function (btn) {
@@ -347,18 +388,6 @@
       });
     });
   </script>
-  {% else %}
-  <p class="hint">No pack yet. Run this room when ready.</p>
-  {% endif %}
-  </div>
-
-  <aside class="guide">
-    <p class="kicker">Lesson</p>
-    <h2>{{ lesson_name }}</h2>
-    <p>{{ brief.decide }}</p>
-    <p class="row"><strong>Do not.</strong> {{ brief.avoid }}</p>
-    <p class="hint">{{ brief.next }}</p>
-  </aside>
   </div>
 
   <details class="history">

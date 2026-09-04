@@ -46,11 +46,12 @@ class Decision(BaseModel):
 
 
 class TeachingNote(BaseModel):
-    """Generic PM lesson. No product-specific numbers. Kept for old packs."""
+    """Generic stage briefing for the team. No product-specific numbers."""
 
     stage_name: str
     one_liner: str
     pm_job: str
+    about: str = ""
     frameworks: list[str]
     must_produce: list[str]
     common_failure: list[str]

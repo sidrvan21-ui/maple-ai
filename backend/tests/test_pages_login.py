@@ -64,6 +64,9 @@ def test_workbench_after_login_shows_role():
     assert "No pack yet" in res.text
     assert "Run Discovery" in res.text
     assert "Sunset" in res.text
+    assert "Understand the opportunity before you pick a strategy." in res.text
+    assert "Walk out with" in res.text
+    assert "Ask around the table" in res.text
 
 
 def test_logout_clears_cookie():

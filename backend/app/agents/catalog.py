@@ -13,62 +13,14 @@ from app.schemas.scoping import ScopingArtifacts
 from app.schemas.strategy import StrategyArtifacts
 from app.schemas.sunset import SunsetArtifacts
 
-GATE = "Human signs one pack. That unlocks the next research folder."
-
-# Short board brief for the workbench side. Not a class card.
-GATE_BRIEF = {
-    1: {
-        "decide": "Is the opportunity real enough to fund a strategy?",
-        "avoid": "Do not average conflicting market numbers.",
-        "next": "Sign unlocks Strategy.",
-    },
-    2: {
-        "decide": "Where do we play, and how do we win?",
-        "avoid": "Do not treat a feature list as strategy. Do not invent LTV or CAC.",
-        "next": "Sign unlocks Scoping.",
-    },
-    3: {
-        "decide": "What ships in this cut — and what is out?",
-        "avoid": "Do not hide the won't list or collapse RICE into one fake score.",
-        "next": "Sign unlocks Development.",
-    },
-    4: {
-        "decide": "Can we beta with a known defect list and a rollback?",
-        "avoid": "Do not mark work done without evidence.",
-        "next": "Sign unlocks Qualify.",
-    },
-    5: {
-        "decide": "Go, scoped-go, or no-go. Launch is a call, not a date.",
-        "avoid": "Do not ship around an open blocker.",
-        "next": "Sign unlocks Launch.",
-    },
-    6: {
-        "decide": "What actually happened in week one?",
-        "avoid": "Do not hide missed alerts or treat press as adoption.",
-        "next": "Sign unlocks Growth.",
-    },
-    7: {
-        "decide": "Is there a repeatable loop, or only a story?",
-        "avoid": "Do not invent conversion rates.",
-        "next": "Sign unlocks Maturity.",
-    },
-    8: {
-        "decide": "Sustain, harvest, or prepare to sunset?",
-        "avoid": "Do not average NPS quotes into one score.",
-        "next": "Sign unlocks Sunset.",
-    },
-    9: {
-        "decide": "Can we retire with notice, export, and a survivor?",
-        "avoid": "Do not shut down silently or invent legal dates.",
-        "next": "Sign closes the cycle.",
-    },
-}
+GATE = "Someone on the team Signs one pack. That unlocks the next room. Reject stays here."
 
 
 def _lesson(
     stage_name: str,
     one_liner: str,
     pm_job: str,
+    about: str,
     frameworks: list[str],
     must_produce: list[str],
     common_failure: list[str],
@@ -79,6 +31,7 @@ def _lesson(
         stage_name=stage_name,
         one_liner=one_liner,
         pm_job=pm_job,
+        about=about,
         frameworks=frameworks,
         must_produce=must_produce,
         common_failure=common_failure,
@@ -109,7 +62,14 @@ SPECS: dict[int, StageSpec] = {
         lesson=_lesson(
             "Discovery",
             "Understand the opportunity before you pick a strategy.",
-            "Turn messy research into a clear problem, user, and market picture.",
+            "Turn messy research into a shared picture of the problem, the people, and the market.",
+            (
+                "This room is where the team agrees what job people are hiring a product to do, "
+                "who feels that job, and whether the market notes are honest enough to fund a strategy. "
+                "You are not picking a solution or a backlog yet. Conflicting numbers stay listed as "
+                "conflict — averaging them is not research. If the picture is still fuzzy, Sign is the "
+                "wrong move; stay here until the team can say the problem in one breath."
+            ),
             ["JTBD", "TAM/SAM/SOM inputs", "SWOT", "personas"],
             ["problem and who", "jobs", "competing options", "market-size inputs that may conflict"],
             ["averaging two market numbers", "starting with features"],
@@ -129,7 +89,13 @@ SPECS: dict[int, StageSpec] = {
         lesson=_lesson(
             "Strategy",
             "Pick the game before you write the backlog.",
-            "Choose a vision, a playing field, and a way to win.",
+            "Choose a vision, a playing field, and a way to win — and name the options you are not running.",
+            (
+                "This room picks the game: where we play, how we win, and which option the team is actually "
+                "running. A feature list is not a strategy. The team should leave able to say why the other "
+                "options lost. Numbers that are not in the notes stay off the page; a napkin stays a napkin. "
+                "The cut, the backlog, and the build come after this choice is signed."
+            ),
             ["BMC", "Porter five forces", "Ansoff", "OKRs"],
             ["vision", "options with one pick", "business-case inputs", "now/next/later"],
             ["writing features as strategy", "inventing LTV or CAC"],
@@ -149,7 +115,13 @@ SPECS: dict[int, StageSpec] = {
         lesson=_lesson(
             "Scoping",
             "A cut is a decision, not a wishlist.",
-            "Turn strategy into what is in, out, and later.",
+            "Turn the chosen game into what ships now, what waits, and what is out.",
+            (
+                "This room turns strategy into a cut the team can build. In, out, and later are all part of "
+                "the decision — hiding the won't list makes Sign dishonest. Open fights stay visible so nobody "
+                "discovers them in the build. Scores are inputs, not a single fake number. If the cut still "
+                "tries to be everything, it is not a cut yet."
+            ),
             ["MRD", "PRD", "MoSCoW", "RICE inputs"],
             ["market problem", "product requirements", "must/should/could/wont", "open fights"],
             ["scoring RICE as one fake number", "hiding the won't list"],
@@ -169,7 +141,13 @@ SPECS: dict[int, StageSpec] = {
         lesson=_lesson(
             "Development",
             "The plan meets the build.",
-            "Track what changed, what is broken, and whether beta can start.",
+            "Track what slipped, what is still broken, and whether a beta can start in good faith.",
+            (
+                "This room is the build against the cut. The team records what changed, what users could not "
+                "do, and which defects are still open. Done means there is evidence, not a green row. A beta "
+                "needs a known defect list and a rollback — not hope. If the cut already slipped, name it here "
+                "so Qualify does not inherit a surprise."
+            ),
             ["checklist", "beta plan", "usability", "agile"],
             ["checklist", "open defects", "usability findings", "beta who/questions"],
             ["green-shifting defects", "beta with no rollback"],
@@ -189,7 +167,13 @@ SPECS: dict[int, StageSpec] = {
         lesson=_lesson(
             "Qualify",
             "Launch is a decision, not a date.",
-            "Judge readiness across product, ops, support, and privacy.",
+            "Judge whether this cut is ready to go, go with a scope, or wait.",
+            (
+                "This room is the launch call. The calendar does not get a vote. The team looks at beta "
+                "evidence, open blockers, who owns the call, and the obligations already written down — "
+                "including whether people can take their data with them. An open blocker stays a blocker. "
+                "Scoped-go is allowed; shipping around red is not. Beta is not launch."
+            ),
             ["beta results", "launch readiness", "RACI"],
             ["beta evidence", "blockers", "go / no-go / scoped-go", "PIPA check"],
             ["shipping around a blocker", "calling beta a launch"],
@@ -209,7 +193,13 @@ SPECS: dict[int, StageSpec] = {
         lesson=_lesson(
             "Launch",
             "The first week teaches more than the plan.",
-            "Record what actually happened, not the war-room slide.",
+            "Record what actually happened in market, then name what the team fixes this week.",
+            (
+                "This room is the first week as it happened, not as it was promised. Missed alerts, quiet "
+                "channels, and real sentiment belong on the page. Press is not adoption. The team should "
+                "leave with a short list of what to fix now — not a rewritten plan that pretends day 0 went "
+                "clean. Honesty here is what Growth has to stand on."
+            ),
             ["launch plan", "day-0 metrics", "sentiment"],
             ["what shipped", "what missed", "what people said", "next actions"],
             ["hiding missed alerts", "treating a press note as adoption"],
@@ -229,7 +219,13 @@ SPECS: dict[int, StageSpec] = {
         lesson=_lesson(
             "Growth",
             "Growth is a loop you can measure, or it is hope.",
-            "Separate experiments that moved a number from stories.",
+            "Separate experiments that moved a number from a story the team likes telling.",
+            (
+                "This room asks whether there is a loop the team can run again, not a one-off push that "
+                "looked busy. Experiments and cohorts beat a growth narrative. If a rate is not in the notes, "
+                "it is not on the page. One test is not an engine. Churn stories matter as much as the "
+                "people who stayed. Sign here means the team agrees what is actually repeating."
+            ),
             ["AARRR", "experiments", "cohorts"],
             ["funnel notes", "experiment results", "retention clues", "growth risks"],
             ["calling one A/B a growth engine", "ignoring churn stories"],
@@ -249,11 +245,17 @@ SPECS: dict[int, StageSpec] = {
         lesson=_lesson(
             "Maturity",
             "A mature product can still be the wrong product.",
-            "Weigh cost, debt, and whether the job is still being done.",
+            "Weigh cost, debt, and whether the job is still being done well enough to keep going.",
+            (
+                "This room is stay, harvest, or start preparing to leave. Scale is not the same as health. "
+                "The team looks at what it costs to keep the job done, what debt is piling up, and what "
+                "people actually say — quotes stay quotes, not one fake score. Adding more SKUs to hide "
+                "decline is not a strategy. Sunset is an allowed answer, not a failure of nerve."
+            ),
             ["cost-to-serve", "NPS qualitative", "tech debt"],
             ["cost picture", "qualitative NPS", "debt list", "sustain or decline"],
             ["averaging NPS quotes into a fake score", "adding SKUs to hide decline"],
-            ["What does one building cost?", "Did we become email again?", "Is this decline?"],
+            ["What does this still cost to serve?", "Did we become the thing we replaced?", "Is this decline?"],
             "Sunset comes next: how we leave without harm.",
         ),
         artifacts_cls=MaturityArtifacts,
@@ -269,7 +271,13 @@ SPECS: dict[int, StageSpec] = {
         lesson=_lesson(
             "Sunset",
             "Ending well is a product job.",
-            "Retire with notice, export, and a clear survivor.",
+            "Retire with notice, a way for people to leave with their data, and a clear survivor.",
+            (
+                "This room is how the team leaves without harm. Why we retire, who must be told, what people "
+                "take with them, and what we keep all have to be sayable in plain words. Silence is not a "
+                "plan. Dates that are not in the notes are not invented here. Sign closes the cycle — there "
+                "is no next room after this one."
+            ),
             ["EOL plan", "notice", "data export"],
             ["reasons", "timeline words", "90-day notice", "what survives"],
             ["silent shutdown", "keeping data with no purpose"],

@@ -16,6 +16,17 @@ def test_catalog_has_nine_rooms():
     assert SPECS[9].name == "Sunset"
 
 
+def test_each_room_explains_the_stage():
+    for spec in SPECS.values():
+        note = spec.lesson
+        assert note.about
+        assert note.one_liner
+        assert note.pm_job
+        assert note.questions_to_ask
+        assert note.must_produce
+        assert note.common_failure
+
+
 def test_admitted_two_sees_s2_not_s3():
     joined = "\n".join(p.as_posix() for p in admitted_paths([1, 2]))
     assert "s2_strategy" in joined

@@ -380,35 +380,24 @@ pre {
 .audit .who { color: var(--ink); }
 .audit .when { color: var(--muted); white-space: nowrap; }
 
-.bench {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) 17.5rem;
-  gap: 1.25rem;
-  align-items: start;
+.stage-cue {
+  margin: 0.15rem 0 1.15rem;
+  color: var(--muted);
+  max-width: 40rem;
 }
 
-.guide {
-  background: var(--paper);
-  border: 1px solid var(--line);
-  border-radius: 14px;
-  padding: 1rem 1.05rem 1.2rem;
-  box-shadow: var(--shadow);
-  position: sticky;
-  top: 1rem;
-}
-
-.guide h2 {
+.lesson-name {
   font-family: var(--serif);
-  font-size: 1.15rem;
+  font-size: 1.85rem;
+  font-weight: 600;
   text-transform: none;
-  letter-spacing: -0.02em;
+  letter-spacing: -0.03em;
   color: var(--ink);
-  margin: 0.15rem 0 0.55rem;
+  margin: 0.1rem 0 0.7rem;
 }
 
-.guide ul { margin: 0.25rem 0 0.7rem; padding-left: 1.05rem; }
-
-@media (max-width: 900px) {
-  .bench { grid-template-columns: 1fr; }
-  .guide { position: static; }
+.lesson-about {
+  font-size: 1.02rem;
+  line-height: 1.65;
+  margin: 0 0 0.85rem;
 }

@@ -5,7 +5,7 @@ from fastapi import APIRouter, Form, HTTPException, Request
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
 
-from app.agents.catalog import GATE_BRIEF, SPECS
+from app.agents.catalog import SPECS
 from app.audit import for_product, log
 from app.auth import ROLES, decode_token, issue_token, principal_from_cookie
 from app.config import settings
@@ -184,8 +184,7 @@ def workbench(
             "can_gate": can_gate,
             "in_review": state["hitl"] == "in_review",
             "run_label": f"Run {current_spec.name}",
-            "lesson_name": SPECS[lesson_stage].name,
-            "brief": GATE_BRIEF[lesson_stage],
+            "lesson": SPECS[lesson_stage].lesson,
             "rooms": rooms,
             "audit": for_product(product_id),
         },

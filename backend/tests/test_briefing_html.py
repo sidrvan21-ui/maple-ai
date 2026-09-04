@@ -91,6 +91,8 @@ def test_strategy_briefing_is_readable_not_json_wall():
     assert "Vision." in page.text
     assert "Maple take" in page.text
     assert "Lesson" in page.text
-    assert "Where do we play, and how do we win?" in page.text
+    assert "Pick the game before you write the backlog." in page.text
+    assert "Ask around the table" in page.text
+    assert "Where do we play?" in page.text
     assert "PM take" not in page.text
     assert '"vision":' not in page.text
