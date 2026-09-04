@@ -26,7 +26,7 @@ A human walks nine product rooms. Each room: find evidence → write a pack → 
       admit    → drop chunks from locked folders
       rails    → no receipts → no writer; citation ids must exist
       LLM      → briefing from receipts only
-      LLM      → PM take (team memo, not a textbook lesson)
+      LLM      → Maple take (Maple's memo, not a textbook lesson)
 5. Pack sits in_review (SQLite saves the bag). Audit logs Run.
 6. Human Sign  → admitted_stages grows, current_stage + 1, audit row
    or Reject   → stay in this room, audit row
@@ -48,7 +48,7 @@ Sign does **not** run the next room. The next **Run** does.
 | Catalog `SPECS` | 9 cards: mission, class lesson (unused on the tab), shape, writer rules | Raw notes |
 | RAG pipeline | Makes receipts from allowed chunks | GatePack |
 | `guardrails.py` | in_review block, receipts, admitted paths, real ids | HTTP middleware |
-| `run_stage` | One room’s walk + PM take | The timetable |
+| `run_stage` | One room’s walk + Maple take | The timetable |
 | LangGraph `graph.py` | 9 room boxes + pick_room | RAG / catalog / admit copies |
 | `MapleState` bag | Room number, open folders, packs, HITL | The raw dump |
 | SQLite `data/maple.db` | Bag + `audit_log` | Fieldwork files |
@@ -85,7 +85,7 @@ After Sign (`hitl.sign_pack`): bag is room 2, card `[1, 2]`. Next invoke → `pi
 5. LangGraph is the timetable; homework is `run_stage`.  
 6. SQLite stores the bag so restart does not fake-reset the gate.  
 7. Rails: no second Run in review; empty RAG does not write.  
-8. PM take is LLM judgment for the team. Audit is who/what/when.
+8. Maple take is Maple's memo, not a human PM. Audit is who/what/when.
 
 ---
 
@@ -102,4 +102,4 @@ After Sign (`hitl.sign_pack`): bag is room 2, card `[1, 2]`. Next invoke → `pi
 | [part-06](part-06-strategy-scoping.md) | All nine rooms + locked picture |
 | [part-08](part-08-growth-sunset.md) | SQLite bag |
 | [part-09](part-09-langgraph.md) | Graph + **line-by-line `graph.py`** |
-| [part-10](part-10-later.md) | Guardrails, PM take, SSO/audit, Docker, share link |
+| [part-10](part-10-later.md) | Guardrails, Maple take, SSO/audit, Docker, share link |

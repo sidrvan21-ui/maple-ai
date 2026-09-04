@@ -6,7 +6,7 @@ from pydantic import BaseModel, Field, create_model
 from app.agents.catalog import StageSpec, spec_for
 from app.guardrails import draft_ids_exist, receipts_are_admitted, require_receipts
 from app.rag.pipeline import run_agentic_rag
-from app.schemas.common import Assumption, Citation, Decision, PmTake, Risk
+from app.schemas.common import Assumption, Citation, Decision, MapleTake, Risk
 from app.schemas.gate import GatePack
 
 
@@ -44,18 +44,19 @@ def fill_briefing(spec: StageSpec, citations: list[Citation]) -> BaseModel:
     )
 
 
-def fill_pm_take(spec: StageSpec, citations: list[Citation], draft: BaseModel) -> PmTake:
-    """Staff-level gate memo for the team. Judgment, not a class card."""
+def fill_maple_take(spec: StageSpec, citations: list[Citation], draft: BaseModel) -> MapleTake:
+    """Maple's gate memo. Judgment, not a class card and not a human PM."""
     writer = ChatOpenAI(model="gpt-4o-mini", temperature=0).with_structured_output(
-        PmTake
+        MapleTake
     )
     receipt_text = "\n".join(
         f"{c.id} | {c.source_path} | {c.span}" for c in citations
     )
     prompt = ChatPromptTemplate.from_template(
-        "You are a staff PM writing for product, finance, and engineering "
-        "in a {stage} gate review. Show business judgment. Do not teach "
+        "You are Maple writing a gate memo for product, finance, and engineering "
+        "in a {stage} review. Show business judgment. Do not teach "
         "frameworks. Do not define JTBD or SWOT. Do not invent numbers.\n"
+        "This is Maple's take, not a staff PM's. "
         "Facts only from receipts (cite c1) or from the draft.\n\n"
         "Decision: {decision}\n"
         "Draft: {draft}\n"
@@ -71,20 +72,28 @@ def fill_pm_take(spec: StageSpec, citations: list[Citation], draft: BaseModel) -
     )
 
 
-def run_stage(stage: int, admitted_stages: list[int]) -> GatePack:
-    """RAG → briefing → PM take → pack."""
+def run_stage(
+    stage: int,
+    admitted_stages: list[int],
+    product_id: str = "porter",
+) -> GatePack:
+    """RAG → briefing → Maple take → pack."""
     if stage not in admitted_stages:
         raise HTTPException(
             status.HTTP_403_FORBIDDEN,
             "stage folder is not admitted",
         )
     spec = spec_for(stage)
-    citations, trace = run_agentic_rag(spec.mission, admitted_stages=admitted_stages)
+    citations, trace = run_agentic_rag(
+        spec.mission,
+        admitted_stages=admitted_stages,
+        product_id=product_id,
+    )
     require_receipts(citations)
-    receipts_are_admitted(citations, admitted_stages)
+    receipts_are_admitted(citations, admitted_stages, product_id)
     draft = fill_briefing(spec, citations)
     draft_ids_exist(draft, citations)
-    take = fill_pm_take(spec, citations, draft)
+    take = fill_maple_take(spec, citations, draft)
     return GatePack(
         stage=spec.number,  # type: ignore[arg-type]
         decision=draft.decision,
@@ -97,6 +106,6 @@ def run_stage(stage: int, admitted_stages: list[int]) -> GatePack:
         required_approver_roles=["product"],
         artifacts=draft.artifacts,
         teaching_note=spec.lesson,
-        pm_take=take,
+        maple_take=take,
         rag_trace=trace,
     )

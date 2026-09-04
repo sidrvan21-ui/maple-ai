@@ -20,6 +20,7 @@
     {% if not sso_ready %}
     <p class="hint">Google SSO is off until client id and secret are in .env. Use Dev log in below.</p>
     {% endif %}
+    <p class="hint"><a href="/onboard">Company onboarding</a> — send files before the first gate.</p>
     {% if allow_dev_login %}
     <form class="login-form" method="post" action="/login">
       <label>Name

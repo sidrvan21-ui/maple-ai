@@ -59,8 +59,8 @@ class TeachingNote(BaseModel):
     next_stage_teaser: str
 
 
-class PmTake(BaseModel):
-    """Staff PM read for the room. For the team, not a textbook."""
+class MapleTake(BaseModel):
+    """Maple's memo for the room. Not a human PM. Not a textbook."""
 
     stake: str
     judgment: str

@@ -27,22 +27,29 @@ def _source_path(path: Path) -> str:
     return path.resolve().relative_to(repo_root()).as_posix()
 
 
-def allowed_source_paths(admitted_stages: list[int]) -> set[str]:
-    return {_source_path(p) for p in admitted_paths(admitted_stages)}
+def allowed_source_paths(
+    admitted_stages: list[int],
+    product_id: str = "porter",
+) -> set[str]:
+    return {_source_path(p) for p in admitted_paths(admitted_stages, product_id)}
 
 
 def filter_admitted(
     docs: list[Document],
     admitted_stages: list[int],
+    product_id: str = "porter",
 ) -> list[Document]:
-    allowed = allowed_source_paths(admitted_stages)
+    allowed = allowed_source_paths(admitted_stages, product_id)
     return [d for d in docs if d.metadata.get("source_path") in allowed]
 
 
-def load_documents(admitted_stages: list[int]) -> list[Document]:
+def load_documents(
+    admitted_stages: list[int],
+    product_id: str = "porter",
+) -> list[Document]:
     docs: list[Document] = []
-    for path in admitted_paths(admitted_stages):
-        text = path.read_text(encoding="utf-8")
+    for path in admitted_paths(admitted_stages, product_id):
+        text = path.read_text(encoding="utf-8", errors="replace")
         docs.append(
             Document(
                 page_content=text,
@@ -85,23 +92,31 @@ class HybridStore:
         return out
 
 
-_store: HybridStore | None = None
+_stores: dict[str, HybridStore] = {}
 
 
-def get_store() -> HybridStore:
-    """Full corpus once. Admit is applied in retrieve, not at index time."""
-    global _store
-    if _store is None:
+def drop_store(product_id: str | None = None) -> None:
+    if product_id is None:
+        _stores.clear()
+        return
+    _stores.pop(product_id, None)
+
+
+def get_store(product_id: str = "porter") -> HybridStore:
+    """Index once per product. Admit is applied in retrieve, not at index time."""
+    key = product_id or "porter"
+    if key not in _stores:
         require_openai_key()
-        _store = HybridStore(chunk_documents(load_documents(ALL_STAGES)))
-    return _store
+        _stores[key] = HybridStore(chunk_documents(load_documents(ALL_STAGES, key)))
+    return _stores[key]
 
 
 def retrieve(
     query: str,
     k: int = 6,
     admitted_stages: list[int] | None = None,
+    product_id: str = "porter",
 ) -> list[Document]:
     stages = admitted_stages or [1]
-    raw = get_store().retrieve(query, k=max(k * 4, 24))
-    return filter_admitted(raw, stages)[:k]
+    raw = get_store(product_id).retrieve(query, k=max(k * 4, 24))
+    return filter_admitted(raw, stages, product_id)[:k]

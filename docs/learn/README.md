@@ -21,7 +21,7 @@ You should be able to read these the night before an interview and walk the repo
 | [part-08-growth-sunset.md](part-08-growth-sunset.md) | 8 Save / export | written — SQLite bag, survives restart |
 | [overview-maple-workflow.md](overview-maple-workflow.md) | — Whole app | written — cycle + who holds what |
 | [part-09-langgraph.md](part-09-langgraph.md) | 9 LangGraph wrapper | written — 9 nodes + graph.py line-by-line |
-| [part-10-later.md](part-10-later.md) | After 9 | written — rails, PM take, SSO/audit, Docker, share |
+| [part-10-later.md](part-10-later.md) | After 9 | written — rails, Maple take, SSO/audit, Docker, share |
 
 ## What each note must contain
 

@@ -5,7 +5,7 @@ from fastapi import APIRouter, Form, HTTPException, Request
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
 
-from app.agents.catalog import SPECS
+from app.agents.catalog import GATE_BRIEF, SPECS
 from app.audit import for_product, log
 from app.auth import ROLES, decode_token, issue_token, principal_from_cookie
 from app.config import settings
@@ -28,6 +28,7 @@ from app.schemas.qualify import QualifyArtifacts
 from app.schemas.scoping import ScopingArtifacts
 from app.schemas.strategy import StrategyArtifacts
 from app.schemas.sunset import SunsetArtifacts
+from app.start import cookie_secure, start_page
 from app.session import get_state, visible_pack
 
 _BRIEFING_KIND = {
@@ -47,7 +48,7 @@ router = APIRouter()
 
 
 def _need_login() -> RedirectResponse:
-    return RedirectResponse("/login", status_code=303)
+    return RedirectResponse("/", status_code=303)
 
 
 def _to_workbench(product_id: str, error: str | None = None) -> RedirectResponse:
@@ -58,46 +59,48 @@ def _to_workbench(product_id: str, error: str | None = None) -> RedirectResponse
 
 
 @router.get("/", response_class=HTMLResponse)
-def home(request: Request):
-    if principal_from_cookie(request) is None:
-        return _need_login()
-    return RedirectResponse("/p/porter", status_code=303)
+def home(request: Request, error: str | None = None):
+    return start_page(request, error=error)
 
 
 @router.get("/login", response_class=HTMLResponse)
 def login_page(request: Request, error: str | None = None):
-    return templates.TemplateResponse(
-        request,
-        "login.html",
-        {
-            "roles": ROLES,
-            "error": error,
-            "sso_ready": sso_ready(),
-            "allow_dev_login": settings.allow_dev_login,
-        },
-    )
+    return start_page(request, error=error)
 
 
 @router.post("/login")
-def login_submit(name: str = Form(...), role: str = Form(...)):
+def login_submit(request: Request, name: str = Form(...), role: str = Form(...)):
     if not settings.allow_dev_login:
-        return RedirectResponse("/login?error=dev+login+off", status_code=303)
+        return RedirectResponse("/?error=dev+login+off", status_code=303)
     if role not in ROLES:
-        return RedirectResponse("/login?error=bad+role", status_code=303)
+        return RedirectResponse("/?error=bad+role", status_code=303)
     token = issue_token(name, role)
     log(decode_token(token), "login", detail="dev")
-    resp = RedirectResponse("/p/porter", status_code=303)
-    resp.set_cookie("maple_token", token, httponly=True, samesite="lax")
+    resp = RedirectResponse("/", status_code=303)
+    resp.set_cookie(
+        "maple_token",
+        token,
+        httponly=True,
+        samesite="lax",
+        secure=cookie_secure(request),
+    )
     return resp
 
 
 @router.get("/auth/google")
-def google_start():
+def google_start(request: Request):
     if not sso_ready():
-        return RedirectResponse("/login?error=sso+not+configured", status_code=303)
+        return RedirectResponse("/?error=sso+not+configured", status_code=303)
     state = new_state()
     resp = RedirectResponse(authorize_url(state), status_code=303)
-    resp.set_cookie("maple_sso", state, httponly=True, samesite="lax", max_age=600)
+    resp.set_cookie(
+        "maple_sso",
+        state,
+        httponly=True,
+        samesite="lax",
+        max_age=600,
+        secure=cookie_secure(request),
+    )
     return resp
 
 
@@ -105,21 +108,27 @@ def google_start():
 def google_callback(request: Request, code: str | None = None, state: str | None = None):
     expected = request.cookies.get("maple_sso")
     if not code or not state or not expected or state != expected:
-        return RedirectResponse("/login?error=sso+state", status_code=303)
+        return RedirectResponse("/?error=sso+state", status_code=303)
     try:
         info = exchange_code(code)
     except Exception:
-        return RedirectResponse("/login?error=sso+exchange", status_code=303)
+        return RedirectResponse("/?error=sso+exchange", status_code=303)
     email = str(info.get("email") or "").lower()
     name = str(info.get("name") or email.split("@")[0] or "sso")
     if not email or not domain_ok(email):
         log(None, "sso_denied", detail=email or "no-email")
-        return RedirectResponse("/login?error=sso+domain", status_code=303)
+        return RedirectResponse("/?error=sso+domain", status_code=303)
     role = role_for_email(email)
     token = issue_token(name, role, email=email)
     log(decode_token(token), "sso_login", detail=email)
-    resp = RedirectResponse("/p/porter", status_code=303)
-    resp.set_cookie("maple_token", token, httponly=True, samesite="lax")
+    resp = RedirectResponse("/", status_code=303)
+    resp.set_cookie(
+        "maple_token",
+        token,
+        httponly=True,
+        samesite="lax",
+        secure=cookie_secure(request),
+    )
     resp.delete_cookie("maple_sso")
     return resp
 
@@ -127,7 +136,7 @@ def google_callback(request: Request, code: str | None = None, state: str | None
 @router.get("/logout")
 def logout(request: Request):
     log(principal_from_cookie(request), "logout")
-    resp = RedirectResponse("/login", status_code=303)
+    resp = RedirectResponse("/", status_code=303)
     resp.delete_cookie("maple_token")
     return resp
 
@@ -149,6 +158,7 @@ def workbench(
     artifacts_text = artifacts.model_dump_json(indent=2) if artifacts is not None else ""
     can_gate = principal.role in state.get("required_approver_roles", [])
     current_spec = SPECS[state["current_stage"]]
+    lesson_stage = pack.stage if pack is not None else state["current_stage"]
     rooms = [
         {
             "n": n,
@@ -174,6 +184,8 @@ def workbench(
             "can_gate": can_gate,
             "in_review": state["hitl"] == "in_review",
             "run_label": f"Run {current_spec.name}",
+            "lesson_name": SPECS[lesson_stage].name,
+            "brief": GATE_BRIEF[lesson_stage],
             "rooms": rooms,
             "audit": for_product(product_id),
         },

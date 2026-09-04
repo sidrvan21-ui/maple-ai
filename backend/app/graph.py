@@ -26,7 +26,7 @@ def pick_room(state: GraphState) -> str:
 def _room_node(stage: int):
     def node(state: GraphState) -> GraphState:
         maple = get_state(state["product_id"])
-        pack = run_stage(stage, maple["admitted_stages"])
+        pack = run_stage(stage, maple["admitted_stages"], state["product_id"])
         put_in_review(maple, pack)
         return state
 

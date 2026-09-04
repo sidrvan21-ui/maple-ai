@@ -6,13 +6,19 @@
   <title>Maple workbench · {{ product_id }}</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Serif:wght@600&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600&family=Outfit:wght@400;500;600&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="/static/maple.css" />
 </head>
 <body class="workbench">
-  <p class="meta">{{ principal.name }} · {{ principal.role }}{% if principal.email %} · {{ principal.email }}{% endif %} ·
-    <a href="/logout">Log out</a>
-  </p>
+  <header class="top">
+    <a class="brand" href="/">Maple</a>
+    <nav class="nav">
+      <span class="who">{{ principal.name }} · {{ principal.role }}{% if principal.email %} · {{ principal.email }}{% endif %}</span>
+      <a href="/onboard">Onboard</a>
+      <a href="/logout">Log out</a>
+    </nav>
+  </header>
+  <main class="sheet">
   <h1>Workbench · {{ product_id }}</h1>
   <p class="status">Stage {{ state.current_stage }} · {{ state.hitl }} ·
     Admitted {{ state.admitted_stages }}</p>
@@ -50,12 +56,14 @@
   <p class="err">{{ error }}</p>
   {% endif %}
 
+  <div class="bench">
+  <div class="bench-main">
   {% if pack %}
   <div class="tabs" role="tablist">
     <button type="button" class="tab on" data-tab="decision">Decision</button>
     <button type="button" class="tab" data-tab="briefing">Briefing</button>
     <button type="button" class="tab" data-tab="citations">Citations</button>
-    <button type="button" class="tab" data-tab="lesson">PM take</button>
+    <button type="button" class="tab" data-tab="take">Maple take</button>
     {% if pack.open_questions or pack.assumptions or pack.risks %}
     <button type="button" class="tab" data-tab="risks">Risks</button>
     {% endif %}
@@ -280,23 +288,23 @@
     {% endif %}
   </div>
 
-  <div id="tab-lesson" class="panel">
-    <h2>PM take</h2>
-    {% if pack.pm_take %}
-    <p><strong>At stake.</strong> {{ pack.pm_take.stake }}</p>
-    <p><strong>Judgment.</strong> {{ pack.pm_take.judgment }}</p>
-    {% if pack.pm_take.challenges %}
+  <div id="tab-take" class="panel">
+    <h2>Maple take</h2>
+    {% if pack.maple_take %}
+    <p><strong>At stake.</strong> {{ pack.maple_take.stake }}</p>
+    <p><strong>Judgment.</strong> {{ pack.maple_take.judgment }}</p>
+    {% if pack.maple_take.challenges %}
     <p><strong>Pushback before Sign</strong></p>
     <ul>
-      {% for c in pack.pm_take.challenges %}
+      {% for c in pack.maple_take.challenges %}
       <li>{{ c }}</li>
       {% endfor %}
     </ul>
     {% endif %}
-    <p><strong>If we Sign.</strong> {{ pack.pm_take.sign_commits }}</p>
-    <p class="hint">Next for the team: {{ pack.pm_take.next_for_the_team }}</p>
+    <p><strong>If we Sign.</strong> {{ pack.maple_take.sign_commits }}</p>
+    <p class="hint">Next for the team: {{ pack.maple_take.next_for_the_team }}</p>
     {% else %}
-    <p class="hint">Re-run this room to get a PM take. Old packs only had a class card.</p>
+    <p class="hint">Re-run this room to get a Maple take. Old packs only had a class card.</p>
     {% endif %}
   </div>
 
@@ -340,8 +348,18 @@
     });
   </script>
   {% else %}
-  <p class="hint">No pack yet. Click {{ run_label }} (uses OpenAI).</p>
+  <p class="hint">No pack yet. Run this room when ready.</p>
   {% endif %}
+  </div>
+
+  <aside class="guide">
+    <p class="kicker">Lesson</p>
+    <h2>{{ lesson_name }}</h2>
+    <p>{{ brief.decide }}</p>
+    <p class="row"><strong>Do not.</strong> {{ brief.avoid }}</p>
+    <p class="hint">{{ brief.next }}</p>
+  </aside>
+  </div>
 
   <details class="history">
     <summary>History</summary>
@@ -370,5 +388,6 @@
     <p class="hint">Login, Run, Sign, and Reject will show up here.</p>
     {% endif %}
   </details>
+  </main>
 </body>
 </html>

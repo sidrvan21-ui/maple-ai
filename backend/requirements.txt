@@ -19,9 +19,11 @@ mcp
 youtube-transcript-api
 pytube
 langchain-text-splitters
-pypdf
 beautifulsoup4
+pypdf
 pymupdf
+python-docx
+openpyxl
 sentence-transformers
 faiss-cpu
 rank_bm25

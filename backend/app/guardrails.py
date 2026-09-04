@@ -34,8 +34,9 @@ def require_receipts(citations: list[Citation]) -> None:
 def receipts_are_admitted(
     citations: list[Citation],
     admitted_stages: list[int],
+    product_id: str = "porter",
 ) -> None:
-    allowed = allowed_source_paths(admitted_stages)
+    allowed = allowed_source_paths(admitted_stages, product_id)
     leaked = [c.source_path for c in citations if c.source_path not in allowed]
     if leaked:
         raise HTTPException(

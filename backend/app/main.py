@@ -9,6 +9,7 @@ from app.auth import DevLoginIn, Principal, TokenOut, issue_token, principal_fro
 from app.config import settings
 from app.rag.admit import repo_root
 from app.routes_discovery import router as discovery_router
+from app.routes_onboard import router as onboard_router
 from app.routes_pages import router as pages_router
 
 load_dotenv(repo_root() / ".env")
@@ -29,6 +30,7 @@ app.add_middleware(
 
 
 app.include_router(pages_router)
+app.include_router(onboard_router)
 app.include_router(discovery_router)
 app.mount(
     "/static",

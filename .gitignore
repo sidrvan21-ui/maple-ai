@@ -19,4 +19,6 @@ out/
 database/*.sqlite
 database/*.db
 data/maple.db
+data/inbox/
+data/products/
 .langsmith/

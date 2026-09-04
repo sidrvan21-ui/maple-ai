@@ -15,6 +15,55 @@ from app.schemas.sunset import SunsetArtifacts
 
 GATE = "Human signs one pack. That unlocks the next research folder."
 
+# Short board brief for the workbench side. Not a class card.
+GATE_BRIEF = {
+    1: {
+        "decide": "Is the opportunity real enough to fund a strategy?",
+        "avoid": "Do not average conflicting market numbers.",
+        "next": "Sign unlocks Strategy.",
+    },
+    2: {
+        "decide": "Where do we play, and how do we win?",
+        "avoid": "Do not treat a feature list as strategy. Do not invent LTV or CAC.",
+        "next": "Sign unlocks Scoping.",
+    },
+    3: {
+        "decide": "What ships in this cut — and what is out?",
+        "avoid": "Do not hide the won't list or collapse RICE into one fake score.",
+        "next": "Sign unlocks Development.",
+    },
+    4: {
+        "decide": "Can we beta with a known defect list and a rollback?",
+        "avoid": "Do not mark work done without evidence.",
+        "next": "Sign unlocks Qualify.",
+    },
+    5: {
+        "decide": "Go, scoped-go, or no-go. Launch is a call, not a date.",
+        "avoid": "Do not ship around an open blocker.",
+        "next": "Sign unlocks Launch.",
+    },
+    6: {
+        "decide": "What actually happened in week one?",
+        "avoid": "Do not hide missed alerts or treat press as adoption.",
+        "next": "Sign unlocks Growth.",
+    },
+    7: {
+        "decide": "Is there a repeatable loop, or only a story?",
+        "avoid": "Do not invent conversion rates.",
+        "next": "Sign unlocks Maturity.",
+    },
+    8: {
+        "decide": "Sustain, harvest, or prepare to sunset?",
+        "avoid": "Do not average NPS quotes into one score.",
+        "next": "Sign unlocks Sunset.",
+    },
+    9: {
+        "decide": "Can we retire with notice, export, and a survivor?",
+        "avoid": "Do not shut down silently or invent legal dates.",
+        "next": "Sign closes the cycle.",
+    },
+}
+
 
 def _lesson(
     stage_name: str,

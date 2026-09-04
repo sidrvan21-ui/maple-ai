@@ -18,10 +18,23 @@ def repo_root() -> Path:
     return Path(__file__).resolve().parents[3]
 
 
-def admitted_paths(admitted_stages: list[int]) -> list[Path]:
+def inputs_root(product_id: str = "porter") -> Path:
+    """Company dump if they onboarded; otherwise the Porter sample."""
+    slug = (product_id or "porter").strip()
+    custom = repo_root() / "data" / "products" / slug
+    if slug not in {"", "porter"} and custom.is_dir():
+        if any((custom / name).is_dir() for name in STAGE_FOLDERS.values()):
+            return custom
+    return repo_root() / "data" / "raw_inputs"
+
+
+def admitted_paths(
+    admitted_stages: list[int],
+    product_id: str = "porter",
+) -> list[Path]:
     """Files the retriever may read. Admit is a filter, not a prompt."""
     root = repo_root()
-    raw = root / "data" / "raw_inputs"
+    raw = inputs_root(product_id)
     blocked = (raw / "README.md").resolve()
     out: list[Path] = []
 

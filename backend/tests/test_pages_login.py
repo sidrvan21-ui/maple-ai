@@ -33,23 +33,25 @@ def test_login_page_is_html():
     assert "/static/maple.css" in res.text
 
 
+def test_home_is_sign_in():
+    res = _client().get("/", follow_redirects=False)
+    assert res.status_code == 200
+    assert "Sign in" in res.text
+    assert "Dev log in" in res.text
+    assert "Company email" in res.text
+
+
 def test_login_post_sets_cookie_and_redirects():
     res = _login(_client())
     assert res.status_code == 303
-    assert res.headers["location"] == "/p/porter"
+    assert res.headers["location"] == "/"
     assert "maple_token" in res.cookies
 
 
-def test_workbench_without_cookie_goes_to_login():
+def test_workbench_without_cookie_goes_home():
     res = _client().get("/p/porter", follow_redirects=False)
     assert res.status_code == 303
-    assert res.headers["location"] == "/login"
-
-
-def test_home_without_cookie_goes_to_login():
-    res = _client().get("/", follow_redirects=False)
-    assert res.status_code == 303
-    assert res.headers["location"] == "/login"
+    assert res.headers["location"] == "/"
 
 
 def test_workbench_after_login_shows_role():
@@ -71,7 +73,7 @@ def test_logout_clears_cookie():
     assert out.status_code == 303
     again = client.get("/p/porter", follow_redirects=False)
     assert again.status_code == 303
-    assert again.headers["location"] == "/login"
+    assert again.headers["location"] == "/"
 
 
 def test_page_sign_unlocks_stage_2():

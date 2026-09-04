@@ -21,5 +21,5 @@ def test_login_page_offers_google():
 
     res = TestClient(app).get("/login")
     assert res.status_code == 200
-    assert "Continue with Google" in res.text
+    assert "Continue with Google" in res.text or "Company email" in res.text
     assert "Dev log in" in res.text

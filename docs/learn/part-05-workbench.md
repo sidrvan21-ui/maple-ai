@@ -93,7 +93,7 @@ From `backend` (venv on):
 
 1. Open `http://127.0.0.1:8000` → login.  
 2. Role `product`, name `Siddharth` → workbench.  
-3. **Run Discovery** (slow, OpenAI). Read briefing + citations + lesson.  
+3. **Run Discovery** (slow, OpenAI). Read briefing + citations + Maple take.  
 4. **Sign** → Admitted shows `[1, 2]`.  
 5. Log out. Log in as `finance`. Sign should fail (“role cannot sign”).  
 6. Or reject instead of sign → still `[1]`.

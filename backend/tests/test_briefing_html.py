@@ -89,4 +89,8 @@ def test_strategy_briefing_is_readable_not_json_wall():
     assert page.status_code == 200
     assert "Stay in Vancouver first" in page.text
     assert "Vision." in page.text
+    assert "Maple take" in page.text
+    assert "Lesson" in page.text
+    assert "Where do we play, and how do we win?" in page.text
+    assert "PM take" not in page.text
     assert '"vision":' not in page.text

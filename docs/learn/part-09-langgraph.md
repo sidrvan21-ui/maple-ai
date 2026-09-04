@@ -48,7 +48,7 @@ Same workbench. **Run Discovery** now goes through the Discovery node. Tests do 
 
 ## On to next
 
-Notes after this: [part-10-later.md](part-10-later.md) — rails, PM take, SSO/audit, Docker.
+Notes after this: [part-10-later.md](part-10-later.md) — rails, Maple take, SSO/audit, Docker.
 
 ---
 

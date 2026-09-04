@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Maple</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600&family=Outfit:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/static/maple.css" />
+</head>
+<body class="home">
+  <header class="top">
+    <a class="brand" href="/">Maple</a>
+    {% if principal %}
+    <nav class="nav">
+      <a href="/onboard">Onboard</a>
+      <a href="/p/porter">Workbench</a>
+      <a href="/logout">Log out</a>
+    </nav>
+    {% endif %}
+  </header>
+
+  <main class="hero">
+    <p class="kicker">Product cycle</p>
+    <h1>A gate for every room.</h1>
+    <p class="lede">Nine stages. Evidence in, a pack out, a human Signs. Dev log in today. Company email later.</p>
+
+    {% if error %}
+    <p class="err">{{ error }}</p>
+    {% endif %}
+
+    {% if principal %}
+    <div class="hero-actions">
+      <a class="btn" href="/p/porter">Open workbench</a>
+      <a class="btn ghost" href="/onboard">Onboard a dump</a>
+    </div>
+    <p class="hint">{{ principal.name }} · {{ principal.role }}{% if principal.email %} · {{ principal.email }}{% endif %}</p>
+    {% else %}
+    <div class="login-card">
+      <h2>Sign in</h2>
+      <p class="hint">Same door later: your company email. For now, Dev log in.</p>
+      {% if allow_dev_login %}
+      <form class="login-form" method="post" action="/login">
+        <label>Name
+          <input name="name" value="Siddharth" autocomplete="name" />
+        </label>
+        <label>Role
+          <select name="role">
+            {% for r in roles %}
+            <option value="{{ r }}" {% if r == "product" %}selected{% endif %}>{{ r }}</option>
+            {% endfor %}
+          </select>
+        </label>
+        <button type="submit">Dev log in</button>
+      </form>
+      {% endif %}
+      <p class="hint"><a href="/auth/google">Company email</a> later — same login, verified by your domain.</p>
+    </div>
+    {% endif %}
+  </main>
+</body>
+</html>

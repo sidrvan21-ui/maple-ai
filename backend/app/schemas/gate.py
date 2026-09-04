@@ -1,12 +1,12 @@
 from typing import Literal
 
-from pydantic import BaseModel, Field
+from pydantic import AliasChoices, BaseModel, ConfigDict, Field
 
 from app.schemas.common import (
     Assumption,
     Citation,
     Decision,
-    PmTake,
+    MapleTake,
     RaciRow,
     RagTrace,
     Role,
@@ -33,6 +33,8 @@ class ComputedBlock(BaseModel):
 
 
 class GatePack(BaseModel):
+    model_config = ConfigDict(populate_by_name=True)
+
     stage: Literal[1, 2, 3, 4, 5, 6, 7, 8, 9]
     decision: Decision
     confidence: float = Field(ge=0, le=1)
@@ -54,6 +56,9 @@ class GatePack(BaseModel):
         | SunsetArtifacts
     )
     teaching_note: TeachingNote
-    pm_take: PmTake | None = None
+    maple_take: MapleTake | None = Field(
+        default=None,
+        validation_alias=AliasChoices("maple_take", "pm_take"),
+    )
     computed: ComputedBlock | None = None
     rag_trace: RagTrace = Field(default_factory=RagTrace)

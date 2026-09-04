@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Maple · Onboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600&family=Outfit:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/static/maple.css" />
+</head>
+<body class="onboard">
+  <header class="top">
+    <a class="brand" href="/">Maple</a>
+    <nav class="nav">
+      <span class="who">{{ principal.name }} · {{ principal.role }}</span>
+      <button type="submit" form="dump" class="btn compact">Save</button>
+      <a class="btn ghost compact" href="/logout">Log out</a>
+    </nav>
+  </header>
+
+  <main class="sheet">
+    <p class="kicker">Company dump</p>
+    <h1>Onboard research</h1>
+    <p class="lede">New product: type a name. Existing product: pick it from the list — Save adds files, it does not wipe the pile.</p>
+
+    {% if error %}
+    <p class="err">{{ error }}</p>
+    {% endif %}
+
+    {% if report %}
+    <div class="receipt">
+      <p><strong>Saved.</strong> {{ report.files }} files for {{ report.product }}.
+        Readable: {{ report.extracted }}. Kept as-is: {{ report.stubs }}.</p>
+      <p><a class="btn compact" href="{{ report.workbench }}">Open workbench</a></p>
+    </div>
+    {% endif %}
+
+    <form id="dump" class="login-card" method="post" action="/onboard" enctype="multipart/form-data">
+      <label>Existing product
+        <select name="existing">
+          <option value="">New product — type a name below</option>
+          {% for p in products %}
+          <option value="{{ p }}">{{ p }}</option>
+          {% endfor %}
+        </select>
+      </label>
+      <label>New product name
+        <input name="product" placeholder="Acme alerts" />
+      </label>
+      <label>Company <span class="hint">(optional)</span>
+        <input name="company" placeholder="Acme Inc." />
+      </label>
+      <label>These files are for
+        <select name="room">
+          <option value="unsure" selected>Not sure — Discovery</option>
+          {% for r in rooms %}
+          <option value="{{ r.n }}">{{ r.n }}. {{ r.name }}</option>
+          {% endfor %}
+        </select>
+      </label>
+      <label>Files
+        <input name="files" type="file" multiple required />
+      </label>
+      <p class="hint">Many files or one zip. Installers blocked. About 40 MB max.</p>
+      <div class="hero-actions">
+        <button type="submit">Save</button>
+        <a class="btn ghost" href="/logout">Log out</a>
+      </div>
+    </form>
+
+    <p class="hint"><a href="/onboard/kit.zip">Download empty nine-room folders</a></p>
+
+    <details class="history">
+      <summary>Nine-room sort guide</summary>
+      {% for r in rooms %}
+      <div class="room-card">
+        <h3>{{ r.n }}. {{ r.name }} <span class="hint">{{ r.folder }}</span></h3>
+        <p>{{ r.one_liner }}</p>
+        <p class="row"><strong>Put here.</strong> {{ r.put | join("; ") }}</p>
+        <p class="row"><strong>Skip.</strong> {{ r.skip | join("; ") }}</p>
+      </div>
+      {% endfor %}
+    </details>
+  </main>
+</body>
+</html>

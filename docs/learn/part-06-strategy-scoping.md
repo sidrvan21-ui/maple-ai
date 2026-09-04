@@ -346,7 +346,7 @@ Tests (no OpenAI):
 - `run_stage(2, [1])` is 403 — folder not admitted.  
 - API `POST /stages/{n}/run` only accepts `n == current_stage`.  
 - After sign, workbench still shows the last pack until you run the next room.  
-- Briefing is pretty for all 9 rooms. PM take is a later LLM memo, not the catalog lesson.  
+- Briefing is pretty for all 9 rooms. Maple take is a later LLM memo, not the catalog lesson.  
 - Parts 7–8 stage work is folded in. Save/export is Part 8 (built).
 
 ---

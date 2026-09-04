@@ -10,6 +10,7 @@ MAX_REWRITE_HOPS = 2
 def run_agentic_rag(
     mission: str,
     admitted_stages: list[int] | None = None,
+    product_id: str = "porter",
 ) -> tuple[list[Citation], RagTrace]:
     """Retrieve, grade, rewrite locally. Stop at citations. No web. No GatePack."""
     stages = admitted_stages or [1]
@@ -20,7 +21,7 @@ def run_agentic_rag(
 
     for question in questions:
         q = question
-        hits = retrieve(q, admitted_stages=stages)
+        hits = retrieve(q, admitted_stages=stages, product_id=product_id)
         result = grade_documents(q, hits)
         dropped.extend(result.dropped)
 
@@ -29,7 +30,7 @@ def run_agentic_rag(
             q = rewrite_query(q)
             hops += 1
             local_hops += 1
-            hits = retrieve(q, admitted_stages=stages)
+            hits = retrieve(q, admitted_stages=stages, product_id=product_id)
             result = grade_documents(q, hits)
             dropped.extend(result.dropped)
 
