@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Maple workbench · {{ product_id }}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Serif:wght@600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/static/maple.css" />
+</head>
+<body class="workbench">
+  <p class="meta">{{ principal.name }} · {{ principal.role }}{% if principal.email %} · {{ principal.email }}{% endif %} ·
+    <a href="/logout">Log out</a>
+  </p>
+  <h1>Workbench · {{ product_id }}</h1>
+  <p class="status">Stage {{ state.current_stage }} · {{ state.hitl }} ·
+    Admitted {{ state.admitted_stages }}</p>
+
+  <div class="rooms">
+    {% for r in rooms %}
+      {% if r.has_pack %}
+      <a class="room {% if r.here %}here{% elif r.admitted %}admitted{% endif %}"
+         href="/p/{{ product_id }}?view={{ r.n }}">{{ r.n }} {{ r.name }}</a>
+      {% else %}
+      <span class="room {% if r.here %}here{% elif r.admitted %}admitted{% else %}locked{% endif %}">{{ r.n }} {{ r.name }}</span>
+      {% endif %}
+    {% endfor %}
+  </div>
+
+  <div class="actions">
+  <form class="gate" method="post" action="/p/{{ product_id }}/run"
+        onsubmit="this.querySelector('button').disabled=true; this.querySelector('button').textContent='Running…'">
+    <button type="submit" {% if in_review %}disabled{% endif %}>{{ run_label }}</button>
+  </form>
+  <form class="gate" method="post" action="/p/{{ product_id }}/sign">
+    <button type="submit" {% if not in_review %}disabled{% endif %}>Sign</button>
+  </form>
+  <form class="gate" method="post" action="/p/{{ product_id }}/reject">
+    <button type="submit" {% if not in_review %}disabled{% endif %}>Reject</button>
+  </form>
+  </div>
+  {% if in_review %}
+  <p class="hint">Sign or Reject this pack before running again.</p>
+  {% endif %}
+  {% if not can_gate %}
+  <p class="hint">This role cannot sign or reject this pack. Log in as product.</p>
+  {% endif %}
+  {% if error %}
+  <p class="err">{{ error }}</p>
+  {% endif %}
+
+  {% if pack %}
+  <div class="tabs" role="tablist">
+    <button type="button" class="tab on" data-tab="decision">Decision</button>
+    <button type="button" class="tab" data-tab="briefing">Briefing</button>
+    <button type="button" class="tab" data-tab="citations">Citations</button>
+    <button type="button" class="tab" data-tab="lesson">PM take</button>
+    {% if pack.open_questions or pack.assumptions or pack.risks %}
+    <button type="button" class="tab" data-tab="risks">Risks</button>
+    {% endif %}
+  </div>
+
+  <div id="tab-decision" class="panel on">
+    <h2>Decision</h2>
+    <p><strong>{{ pack.decision.recommendation }}</strong> — {{ pack.decision.asked }}</p>
+    <p>{{ pack.decision.rationale }}</p>
+    <p class="hint">Stage {{ pack.stage }} · Confidence {{ pack.confidence }}</p>
+  </div>
+
+  <div id="tab-briefing" class="panel">
+    <h2>Briefing</h2>
+
+    {% if briefing_kind == "discovery" %}
+    <p><strong>Pitch.</strong> {{ artifacts.elevator_pitch }}</p>
+    <p class="row"><strong>Problem.</strong> {{ artifacts.product_concept.problem }}</p>
+    <p class="row"><strong>Who.</strong> {{ artifacts.product_concept.who }}</p>
+    <p class="row"><strong>Job.</strong> {{ artifacts.product_concept.job }}</p>
+    <p class="row"><strong>Why now.</strong> {{ artifacts.product_concept.why_now }}</p>
+    <p class="row"><strong>Charter.</strong> {{ artifacts.project_charter.purpose }}</p>
+    {% if artifacts.smart_goals %}
+    <p><strong>Goals</strong></p>
+    <ul>{% for g in artifacts.smart_goals %}<li>{{ g }}</li>{% endfor %}</ul>
+    {% endif %}
+    <h2>SWOT</h2>
+    <p><strong>S</strong> {{ artifacts.swot.strengths | join(", ") }}</p>
+    <p><strong>W</strong> {{ artifacts.swot.weaknesses | join(", ") }}</p>
+    <p><strong>O</strong> {{ artifacts.swot.opportunities | join(", ") }}</p>
+    <p><strong>T</strong> {{ artifacts.swot.threats | join(", ") }}</p>
+
+    {% elif briefing_kind == "strategy" %}
+    <p class="row"><strong>Vision.</strong> {{ artifacts.vision }}</p>
+    <p class="row"><strong>Value.</strong> {{ artifacts.value_proposition }}</p>
+    <p class="row"><strong>North star.</strong> {{ artifacts.north_star }}</p>
+    <p class="row"><strong>Charter update.</strong> {{ artifacts.charter_updates }}</p>
+    <p class="row"><strong>Pricing.</strong> {{ artifacts.business_case.pricing_model }}</p>
+    {% if artifacts.strategy_options %}
+    <p><strong>Options</strong></p>
+    <ul>
+      {% for o in artifacts.strategy_options %}
+      <li>{% if o.picked %}<strong>Picked — </strong>{% endif %}{{ o.name }}: {{ o.note }}</li>
+      {% endfor %}
+    </ul>
+    {% endif %}
+    {% if artifacts.okrs %}
+    <p><strong>OKRs</strong></p>
+    <ul>
+      {% for o in artifacts.okrs %}
+      <li>{{ o.objective }} — {{ o.key_results | join("; ") }}</li>
+      {% endfor %}
+    </ul>
+    {% endif %}
+    <p><strong>Now</strong> {{ artifacts.roadmap.now | join(", ") }}</p>
+    <p><strong>Next</strong> {{ artifacts.roadmap.next | join(", ") }}</p>
+    <p><strong>Later</strong> {{ artifacts.roadmap.later | join(", ") }}</p>
+    <h2>Business model</h2>
+    <p class="row"><strong>Segments.</strong> {{ artifacts.bmc.customer_segments }}</p>
+    <p class="row"><strong>Proposition.</strong> {{ artifacts.bmc.value_propositions }}</p>
+    <p class="row"><strong>Channels.</strong> {{ artifacts.bmc.channels }}</p>
+    <p class="row"><strong>Revenue.</strong> {{ artifacts.bmc.revenue_streams }}</p>
+
+    {% elif briefing_kind == "scoping" %}
+    <p class="row"><strong>Market problem.</strong> {{ artifacts.mrd.market_problem }}</p>
+    <p class="row"><strong>Segments.</strong> {{ artifacts.mrd.segments | join(", ") }}</p>
+    <p class="row"><strong>PRD problem.</strong> {{ artifacts.prd.problem }}</p>
+    <p class="row"><strong>Scope.</strong> {{ artifacts.prd.scope }}</p>
+    <p class="row"><strong>Success.</strong> {{ artifacts.prd.success }}</p>
+    <p><strong>Must</strong> {{ artifacts.moscow.must | join(", ") }}</p>
+    <p><strong>Should</strong> {{ artifacts.moscow.should | join(", ") }}</p>
+    <p><strong>Could</strong> {{ artifacts.moscow.could | join(", ") }}</p>
+    <p><strong>Won't</strong> {{ artifacts.moscow.wont | join(", ") }}</p>
+    {% if artifacts.rice_inputs %}
+    <p><strong>RICE inputs</strong> (listed, not averaged)</p>
+    <ul>
+      {% for r in artifacts.rice_inputs %}
+      <li>{{ r.item }} — reach {{ r.reach.value }} {{ r.reach.unit }}
+        ({{ r.reach.citation_id or r.reach.assumption_id }})</li>
+      {% endfor %}
+    </ul>
+    {% endif %}
+    {% if artifacts.user_stories %}
+    <p><strong>Stories</strong></p>
+    <ul>
+      {% for s in artifacts.user_stories %}
+      <li>{{ s.story }} — {{ s.acceptance }}</li>
+      {% endfor %}
+    </ul>
+    {% endif %}
+    <p class="row"><strong>UX.</strong> {{ artifacts.ux_brief }}</p>
+    {% if artifacts.open_fights %}
+    <p><strong>Open fights</strong></p>
+    <ul>{% for f in artifacts.open_fights %}<li>{{ f }}</li>{% endfor %}</ul>
+    {% endif %}
+
+    {% elif briefing_kind == "development" %}
+    <p class="row"><strong>Sprint goal.</strong> {{ artifacts.agile.sprint_goal }}</p>
+    <p class="row"><strong>Burndown.</strong> {{ artifacts.agile.burndown_note }}</p>
+    <p class="row"><strong>Beta who.</strong> {{ artifacts.beta_plan.who }}</p>
+    <p class="row"><strong>Beta success.</strong> {{ artifacts.beta_plan.success }}</p>
+    <p class="row"><strong>Rollback.</strong> {{ artifacts.beta_plan.rollback }}</p>
+    {% if artifacts.develop_checklist %}
+    <p><strong>Checklist</strong></p>
+    <ul>
+      {% for i in artifacts.develop_checklist %}
+      <li>{% if i.done %}Done{% else %}Open{% endif %} — {{ i.item }}</li>
+      {% endfor %}
+    </ul>
+    {% endif %}
+    {% if artifacts.usability_findings %}
+    <p><strong>Usability</strong></p>
+    <ul>{% for u in artifacts.usability_findings %}<li>{{ u }}</li>{% endfor %}</ul>
+    {% endif %}
+    {% if artifacts.defects_open %}
+    <p><strong>Open defects</strong></p>
+    <ul>
+      {% for d in artifacts.defects_open %}
+      <li>{{ d.id }} ({{ d.severity }}) — {{ d.note }}</li>
+      {% endfor %}
+    </ul>
+    {% endif %}
+
+    {% elif briefing_kind == "qualify" %}
+    <p class="row"><strong>Launch call.</strong> {{ artifacts.launch_decision }}</p>
+    <p class="row"><strong>Pricing.</strong> {{ artifacts.pricing_for_launch }}</p>
+    <p class="row"><strong>Enablement.</strong> {{ artifacts.enablement_notes }}</p>
+    <p class="row"><strong>PIPA.</strong> {{ artifacts.launch_readiness.pipa }}</p>
+    <p class="row"><strong>Support.</strong> {{ artifacts.launch_readiness.support }}</p>
+    <p class="row"><strong>Ops.</strong> {{ artifacts.launch_readiness.ops }}</p>
+    {% if artifacts.beta_results %}
+    <p><strong>Beta</strong></p>
+    <ul>{% for b in artifacts.beta_results %}<li>{{ b }}</li>{% endfor %}</ul>
+    {% endif %}
+    {% if artifacts.blockers %}
+    <p><strong>Blockers</strong></p>
+    <ul>{% for b in artifacts.blockers %}<li>{{ b }}</li>{% endfor %}</ul>
+    {% endif %}
+
+    {% elif briefing_kind == "launch" %}
+    <p class="row"><strong>Plan.</strong> {{ artifacts.launch_plan }}</p>
+    <p class="row"><strong>Demand.</strong> {{ artifacts.demand_gen }}</p>
+    <p class="row"><strong>Messaging.</strong> {{ artifacts.messaging }}</p>
+    <p class="row"><strong>Channels.</strong> {{ artifacts.channel_readiness }}</p>
+    {% if artifacts.day0_metrics %}
+    <p><strong>Day 0</strong></p>
+    <ul>{% for m in artifacts.day0_metrics %}<li>{{ m }}</li>{% endfor %}</ul>
+    {% endif %}
+    {% if artifacts.missed_alerts %}
+    <p><strong>Missed alerts</strong></p>
+    <ul>{% for m in artifacts.missed_alerts %}<li>{{ m }}</li>{% endfor %}</ul>
+    {% endif %}
+    {% if artifacts.sentiment %}
+    <p><strong>Sentiment</strong></p>
+    <ul>{% for s in artifacts.sentiment %}<li>{{ s }}</li>{% endfor %}</ul>
+    {% endif %}
+
+    {% elif briefing_kind == "growth" %}
+    <p class="row"><strong>Acquire.</strong> {{ artifacts.aarrr.acquire }}</p>
+    <p class="row"><strong>Activate.</strong> {{ artifacts.aarrr.activate }}</p>
+    <p class="row"><strong>Retain.</strong> {{ artifacts.aarrr.retain }}</p>
+    <p class="row"><strong>Refer.</strong> {{ artifacts.aarrr.refer }}</p>
+    <p class="row"><strong>Revenue.</strong> {{ artifacts.aarrr.revenue }}</p>
+    <p class="row"><strong>PLG.</strong> {{ artifacts.plg_verdict }}</p>
+    <p class="row"><strong>North star.</strong> {{ artifacts.heart_or_north_star_score }}</p>
+    {% if artifacts.experiments %}
+    <p><strong>Experiments</strong></p>
+    <ul>
+      {% for e in artifacts.experiments %}
+      <li>{{ e.name }} — {{ e.result }}</li>
+      {% endfor %}
+    </ul>
+    {% endif %}
+
+    {% elif briefing_kind == "maturity" %}
+    <p class="row"><strong>Sustain or decline.</strong> {{ artifacts.sustain_vs_decline }}</p>
+    <p class="row"><strong>Cost.</strong> {{ artifacts.cost_per_building }}</p>
+    <p class="row"><strong>Support load.</strong> {{ artifacts.support_load }}</p>
+    <p class="row"><strong>Email again?</strong> {{ artifacts.email_again_verdict }}</p>
+    {% if artifacts.nps_qualitative %}
+    <p><strong>NPS quotes</strong></p>
+    <ul>{% for n in artifacts.nps_qualitative %}<li>{{ n }}</li>{% endfor %}</ul>
+    {% endif %}
+    {% if artifacts.tech_debt %}
+    <p><strong>Tech debt</strong></p>
+    <ul>{% for t in artifacts.tech_debt %}<li>{{ t }}</li>{% endfor %}</ul>
+    {% endif %}
+
+    {% elif briefing_kind == "sunset" %}
+    <p class="row"><strong>EOL plan.</strong> {{ artifacts.eol_plan }}</p>
+    <p class="row"><strong>90-day notice.</strong> {{ artifacts.notice_90_day }}</p>
+    <p class="row"><strong>Export.</strong> {{ artifacts.pipa_export }}</p>
+    <p class="row"><strong>What survives.</strong> {{ artifacts.what_survives }}</p>
+    {% if artifacts.reasons_to_retire %}
+    <p><strong>Why retire</strong></p>
+    <ul>{% for r in artifacts.reasons_to_retire %}<li>{{ r }}</li>{% endfor %}</ul>
+    {% endif %}
+    {% if artifacts.eol_checklist %}
+    <p><strong>Checklist</strong></p>
+    <ul>{% for c in artifacts.eol_checklist %}<li>{{ c }}</li>{% endfor %}</ul>
+    {% endif %}
+
+    {% else %}
+    <pre>{{ artifacts_text }}</pre>
+    {% endif %}
+  </div>
+
+  <div id="tab-citations" class="panel">
+    <h2>Citations</h2>
+    {% if pack.citations %}
+    <ul>
+      {% for c in pack.citations %}
+      <li>
+        <strong>{{ c.id }}</strong> · {{ c.source_path }}
+        {% if c.why_kept %}<span class="hint"> — {{ c.why_kept }}</span>{% endif %}
+        <p class="quote">{{ c.span }}</p>
+      </li>
+      {% endfor %}
+    </ul>
+    {% else %}
+    <p class="hint">No receipts in this pack.</p>
+    {% endif %}
+  </div>
+
+  <div id="tab-lesson" class="panel">
+    <h2>PM take</h2>
+    {% if pack.pm_take %}
+    <p><strong>At stake.</strong> {{ pack.pm_take.stake }}</p>
+    <p><strong>Judgment.</strong> {{ pack.pm_take.judgment }}</p>
+    {% if pack.pm_take.challenges %}
+    <p><strong>Pushback before Sign</strong></p>
+    <ul>
+      {% for c in pack.pm_take.challenges %}
+      <li>{{ c }}</li>
+      {% endfor %}
+    </ul>
+    {% endif %}
+    <p><strong>If we Sign.</strong> {{ pack.pm_take.sign_commits }}</p>
+    <p class="hint">Next for the team: {{ pack.pm_take.next_for_the_team }}</p>
+    {% else %}
+    <p class="hint">Re-run this room to get a PM take. Old packs only had a class card.</p>
+    {% endif %}
+  </div>
+
+  {% if pack.open_questions or pack.assumptions or pack.risks %}
+  <div id="tab-risks" class="panel">
+    {% if pack.open_questions %}
+    <h2>Open questions</h2>
+    <ul>
+      {% for q in pack.open_questions %}
+      <li>{{ q }}</li>
+      {% endfor %}
+    </ul>
+    {% endif %}
+    {% if pack.assumptions %}
+    <h2>Assumptions</h2>
+    <ul>
+      {% for a in pack.assumptions %}
+      <li>{{ a.id }}: {{ a.claim }} (kill: {{ a.kill_criterion }})</li>
+      {% endfor %}
+    </ul>
+    {% endif %}
+    {% if pack.risks %}
+    <h2>Risks</h2>
+    <ul>
+      {% for r in pack.risks %}
+      <li>{{ r.id }}: {{ r.statement }} · {{ r.likelihood }}/{{ r.impact }}</li>
+      {% endfor %}
+    </ul>
+    {% endif %}
+  </div>
+  {% endif %}
+
+  <script>
+    document.querySelectorAll(".tab").forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        document.querySelectorAll(".tab").forEach(function (b) { b.classList.remove("on"); });
+        document.querySelectorAll(".panel").forEach(function (p) { p.classList.remove("on"); });
+        btn.classList.add("on");
+        document.getElementById("tab-" + btn.dataset.tab).classList.add("on");
+      });
+    });
+  </script>
+  {% else %}
+  <p class="hint">No pack yet. Click {{ run_label }} (uses OpenAI).</p>
+  {% endif %}
+
+  <details class="history">
+    <summary>History</summary>
+    {% if audit %}
+    <table class="audit">
+      <thead>
+        <tr>
+          <th>When</th>
+          <th>Who</th>
+          <th>Action</th>
+          <th>Note</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for e in audit %}
+        <tr>
+          <td class="when">{{ e.when }}</td>
+          <td class="who">{{ e.actor }}{% if e.role %} · {{ e.role }}{% endif %}</td>
+          <td class="act">{{ e.action }}</td>
+          <td>{{ e.detail }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <p class="hint">Login, Run, Sign, and Reject will show up here.</p>
+    {% endif %}
+  </details>
+</body>
+</html>

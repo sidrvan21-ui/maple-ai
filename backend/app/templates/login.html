@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Maple login</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Serif:wght@600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/static/maple.css" />
+</head>
+<body class="login">
+  <div class="login-card">
+    <h1>Maple</h1>
+    <p class="meta">Sign in to review a gate pack.</p>
+    {% if error %}
+    <p class="err">{{ error }}</p>
+    {% endif %}
+    <a class="sso" href="/auth/google">Continue with Google</a>
+    {% if not sso_ready %}
+    <p class="hint">Google SSO is off until client id and secret are in .env. Use Dev log in below.</p>
+    {% endif %}
+    {% if allow_dev_login %}
+    <form class="login-form" method="post" action="/login">
+      <label>Name
+        <input name="name" value="Siddharth" />
+      </label>
+      <label>Role
+        <select name="role">
+          {% for r in roles %}
+          <option value="{{ r }}" {% if r == "product" %}selected{% endif %}>{{ r }}</option>
+          {% endfor %}
+        </select>
+      </label>
+      <button type="submit">Dev log in</button>
+    </form>
+    {% endif %}
+  </div>
+</body>
+</html>

@@ -1,0 +1,12 @@
+.git
+.venv
+backend/.venv
+**/__pycache__
+**/*.pyc
+frontend
+node_modules
+docs
+.cursor
+*.md
+.env
+data/maple.db

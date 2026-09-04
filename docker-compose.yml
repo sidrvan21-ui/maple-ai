@@ -1,0 +1,17 @@
+services:
+  api:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    environment:
+      CORS_ORIGINS: http://localhost:8000
+      MAPLE_DB_PATH: /maple/persist/maple.db
+    volumes:
+      - maple_persist:/maple/persist
+
+volumes:
+  maple_persist:
